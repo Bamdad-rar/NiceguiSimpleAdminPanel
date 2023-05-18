@@ -86,6 +86,7 @@ def main_page(request: Request) -> None:
                         for sub_name in list_plugins:
                             with ui.tab_panel(f'{sub_name}'):
                                 ui.label(f'This is the {sub_name} tab ')
+                                plugins.get_content(name,sub_name)
 
 
 
