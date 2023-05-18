@@ -18,7 +18,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from nicegui import app
 from nicegui import ui
 
-
+import plugins
+import sections
 # put your your own secret key in an environment variable MY_SECRET_KEY
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('MY_SECRET_KEY', ''))
 
@@ -30,7 +31,7 @@ session_info: Dict[str, Dict] = {}
 def is_authenticated(request: Request) -> bool:
     return session_info.get(request.session.get('id'), {}).get('authenticated', False)
 
-tab_names = ['A', 'B', 'C']
+
 @ui.page('/')
 def main_page(request: Request) -> None:
     if not is_authenticated(request):
@@ -40,7 +41,7 @@ def main_page(request: Request) -> None:
     with ui.header().classes(replace='row items-center') as header:
         with ui.row():
             with ui.tabs() as main_tabs:
-                for names in tab_names:
+                for names in sections.list:
                     ui.tab(names)
             # ui.button(on_click=lambda: left_drawer.toggle()).props('flat color=white icon=menu')
             # with ui.column().classes('absolute-center items-center'):
@@ -67,25 +68,24 @@ def main_page(request: Request) -> None:
 
 
 
-    with ui.tab_panels(main_tabs, value=tab_names[0]):
-        sub_tabs={}
-
-        for name in tab_names:
+    with ui.tab_panels(main_tabs, value=sections.list[0]):
+        for name in sections.list:
             with ui.tab_panel(name):
                 # ui.label(f'This is the {name} tab')
                 # with ui.left_drawer().classes('bg-blue-100') as left_drawer:
                 #     ui.label(f'Side menu {name}')
+                list_plugins = plugins.get_section_plugins(name)
                 with ui.row():
                     with  ui.tabs() as sub_tabs:
                             sub_tabs.props("vertical")
-                            ui.tab(f'Home {name}', icon='home')
-                            ui.tab(f'About {name}', icon='info')
-                    with ui.tab_panels(sub_tabs, value=f'Home {name}')as sub_panel:
+
+                            for sub_name in list_plugins:
+                                ui.tab(f'{sub_name}', icon='home')
+                    with ui.tab_panels(sub_tabs, value=list_plugins[0] if len(list_plugins)>0 else None)as sub_panel:
                         sub_panel.props("vertical")
-                        with ui.tab_panel(f'Home {name}'):
-                            ui.label(f'This is the first tab {name}')
-                        with ui.tab_panel(f'About {name}'):
-                            ui.label(f'This is the second tab {name}')
+                        for sub_name in list_plugins:
+                            with ui.tab_panel(f'{sub_name}'):
+                                ui.label(f'This is the {sub_name} tab ')
 
 
 
