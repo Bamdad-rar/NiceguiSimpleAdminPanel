@@ -4,6 +4,6 @@ def init():
     global list
     list+=["monitoring"]
     list+=["Setting"]
-    list+=["Report"]
+    list+=["Reporting"]
     return
 init()
