@@ -15,7 +15,9 @@ from fastapi import Request
 from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
-from nicegui import app, ui
+from nicegui import app
+from nicegui import ui
+
 
 # put your your own secret key in an environment variable MY_SECRET_KEY
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('MY_SECRET_KEY', ''))
@@ -35,41 +37,59 @@ def main_page(request: Request) -> None:
         return RedirectResponse('/login')
     session = session_info[request.session['id']]
 
-    def switch_tab(msg: Dict) -> None:
-        name = msg['args']
-        tabs.props(f'model-value={name}')
-        panels.props(f'model-value={name}')
     with ui.header().classes(replace='row items-center') as header:
-        ui.button(on_click=lambda: left_drawer.toggle()).props('flat color=white icon=menu')
-
-    # with ui.column().classes('absolute-center items-center'):
-        ui.label(f'Hello {session["username"]}!').classes('text-2xl')
-        # NOTE we navigate to a new page here to be able to modify the session cookie (it is only editable while a request is en-route)
-        # see https://github.com/zauberzeug/nicegui/issues/527 for more details
-        ui.button('', on_click=lambda: ui.open('/logout')).props('outline round color=red icon=logout')
+        with ui.row():
+            with ui.tabs() as main_tabs:
+                for names in tab_names:
+                    ui.tab(names)
+            # ui.button(on_click=lambda: left_drawer.toggle()).props('flat color=white icon=menu')
+            # with ui.column().classes('absolute-center items-center'):
+            ui.label(f'Hello {session["username"]}!').classes('text-2xl')
+            # NOTE we navigate to a new page here to be able to modify the session cookie (it is only editable while a request is en-route)
+            # see https://github.com/zauberzeug/nicegui/issues/527 for more details
+            ui.button('', on_click=lambda: ui.open('/logout')).props('outline round color=red icon=logout')
 
 
     with ui.footer(value=False) as footer:
         ui.label('Footer')
 
-    with ui.left_drawer().classes('bg-blue-100') as left_drawer:
-        ui.label('Side menu')
 
-        with ui.element('q-tabs').on('update:model-value', switch_tab) as tabs:
-            for name in tab_names:
-                # ui.button(f'Tab {name}', on_click=lambda: switch_tab({"args":name}))
-                with ui.element('div').classes('p-2 bg-green-100'):
-                    ui.element('q-tab').props(f'name={name} div label={name}')
+
+
     with ui.page_sticky(position='bottom-right', x_offset=20, y_offset=20):
         ui.button(on_click=footer.toggle).props('fab icon=contact_support')
 
     # the page content consists of multiple tab panels
-    with ui.element('q-tab-panels').props('model-value=A animated').classes('w-full') as panels:
+    # with ui.element('q-tab-panels').props('model-value=A animated').classes('w-full') as panels:
+    #
+    #         with ui.element('q-tab-panel').props(f'name={name}').classes('w-full'):
+    #             ui.label(f'Content of {name}')
+
+
+
+    with ui.tab_panels(main_tabs, value=tab_names[0]):
+        sub_tabs={}
+
         for name in tab_names:
-            with ui.element('q-tab-panel').props(f'name={name}').classes('w-full'):
-                ui.label(f'Content of {name}')
+            with ui.tab_panel(name):
+                # ui.label(f'This is the {name} tab')
+                # with ui.left_drawer().classes('bg-blue-100') as left_drawer:
+                #     ui.label(f'Side menu {name}')
+                with ui.row():
+                    with  ui.tabs() as sub_tabs:
+                            sub_tabs.props("vertical")
+                            ui.tab(f'Home {name}', icon='home')
+                            ui.tab(f'About {name}', icon='info')
+                    with ui.tab_panels(sub_tabs, value=f'Home {name}')as sub_panel:
+                        sub_panel.props("vertical")
+                        with ui.tab_panel(f'Home {name}'):
+                            ui.label(f'This is the first tab {name}')
+                        with ui.tab_panel(f'About {name}'):
+                            ui.label(f'This is the second tab {name}')
 
 
+
+#
 
 
 
@@ -102,6 +122,7 @@ def logout(request: Request) -> None:
         request.session['id'] = None
         return RedirectResponse('/login')
     return RedirectResponse('/')
+
 
 
 ui.run()
