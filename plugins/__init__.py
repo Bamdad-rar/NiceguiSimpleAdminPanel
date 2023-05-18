@@ -5,6 +5,8 @@ list= {}
 total_list = []
 base_dir = os.path.abspath(os.path.dirname(__file__))
 def init():
+    global  list
+    global total_list
     for fname in os.listdir(base_dir):
         print(fname)
         if os.path.isdir(os.path.join(base_dir,fname)):
