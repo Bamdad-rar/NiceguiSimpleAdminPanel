@@ -15,10 +15,5 @@ objects = model_factory({
             "values":["R1","R2","R3"]
         }
     },
-    "list":[
-        {"id":1, "name": "g1", "role":"R2"},
-        {"id":2, "name": "g2", "role":"R3"},
-        {"id":3, "name": "g3", "role":"R1"},
-    ]
 })
 ui_factory(objects)

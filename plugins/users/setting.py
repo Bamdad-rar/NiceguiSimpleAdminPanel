@@ -14,10 +14,5 @@ objects=model_factory({
             "type":"number"
         }
     },
-    "list":[
-        {"id":1, "name":"User1", "age":10},
-        {"id":2, "name":"User2", "age":20},
-        {"id":3, "name":"User3", "age":15},
-    ]
 })
 ui_factory(objects)
